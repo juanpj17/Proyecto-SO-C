@@ -1,0 +1,26 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+// Genera un número aleatorio entre 0 y 19 para ser usado como valor inicial
+int nInicial() {
+    return rand() % 20;
+}
+
+// Calcula el número de Fibonacci n a partir del valor inicial a
+int fibonacci(int a, int n) {
+    int b = a + 1;
+    for (int i = 0; i < n; i++) {
+        int c = a + b;
+        a = b;
+        b = c;
+    }
+    return b;
+}
+
+int main() {
+    srand(time(NULL));
+    // Imprime el resultado de calcular el número de Fibonacci 1,000,000 a partir de un valor inicial aleatorio
+    printf("%d\n", fibonacci(nInicial(), 1000000));
+    return 0;
+}
