@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <unistd.h>
+#include <sys/time.h>
 
 int main(int argc, char *argv[]) {
     int i;
     char programa[1000];
-    double start, end;
+    struct timeval start, end;
 
     // Verifica si se proporcionó al menos un argumento al programa
     if (argc > 1) {
@@ -22,8 +22,8 @@ int main(int argc, char *argv[]) {
         // Imprime el nombre completo del programa
         printf("%s\n", programa);
 
-        // Inicia el temporizador
-        start = clock();
+        // Obtiene el tiempo de inicio
+        gettimeofday(&start, NULL);
 
         // Construye un comando para ejecutar el programa con c-es-horrible
         char command[1000] = "c-es-horrible";
@@ -32,14 +32,17 @@ int main(int argc, char *argv[]) {
         // Ejecuta el comando para ejecutar el programa
         system(command);
 
-        // Detiene el temporizador
-        end = clock();
+        // Obtiene el tiempo de finalización
+        gettimeofday(&end, NULL);
 
+        // Calcula el tiempo de ejecución en segundos
+        double execution_time = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
         // Imprime el tiempo de ejecución del programa
-        printf("%f segundos\n", (end - start) / CLOCKS_PER_SEC);
+        printf("%f segundos\n", execution_time);
     } else {
         // Indica que no se proporcionaron suficientes argumentos al programa
         printf("ERROR en los parametros\n");
     }
+
     return 0;
 }
