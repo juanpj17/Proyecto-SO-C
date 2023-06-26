@@ -2,25 +2,21 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
-#include <string.h>
 
-#define MESSAGE_SIZE 50
-
-void handler(int signum){
+void handler(int signum) {
     printf("Mensaje enviado\n");
 }
 
 int main() {
-    // Se define el manejador para la señal SIGALRM
-    signal(SIGALRM, handler);
-    
-    // Se crea el pipe para la comunicación entre procesos
-    int pipefd[2];
     pid_t c1, c2;
-    char message[MESSAGE_SIZE];
+    int pipefd[2];
 
+    // Se define el manejador cuando se recibe la señal de alarma
+    signal(SIGALRM, handler);
+
+    // Se crea el pipe
     if (pipe(pipefd) == -1) {
-        perror("pipe");
+        perror("Error al crear el pipe");
         exit(EXIT_FAILURE);
     }
 
@@ -28,32 +24,38 @@ int main() {
     c2 = fork();
 
     if (c2 == 0) {
-        // Código del proceso hijo c2
+        // Proceso hijo c2
+        // En c2 se cierra el extremo de escritura del pipe
         close(pipefd[1]);
+
         for (int i = 0; i < 10; i++) {
             // Se lee el mensaje del proceso c1
-            read(pipefd[0], message, MESSAGE_SIZE);
-            printf("%s\n", message);
-            // printf("Soy pid, c %d he recibido mensaje %s\n", i, message);
+            char text[50];
+            read(pipefd[0], text, 50);
+            printf("%s\n", text);
+            // printf("Soy pid, c%d, he recibido mensaje %s\n", i, text);
         }
     } else {
         // Se crea el proceso hijo c1
         c1 = fork();
 
         if (c1 == 0) {
-            // Código del proceso hijo c1
+            // Proceso hijo c1
+            // En c1 se cierra el extremo de lectura del pipe
             close(pipefd[0]);
+
             for (int i = 0; i < 10; i++) {
-                // Se envía una señal SIGALRM al proceso c1
+                // La alarma es enviada cada 2 segundos
                 alarm(2);
+                // El proceso se retiene hasta que se reciba una señal
                 pause();
-                strcpy(message, "Mensaje recibido");
-                // Se escribe el mensaje en el pipe para que el proceso c2 lo lea
-                write(pipefd[1], message, strlen(message) + 1);
-                // printf("Soy pid2, c %d he mandado mensaje y debe haber sido leido\n", i);
+                // C1 envía al extremo de escritura del pipe
+                char text[] = "Mensaje recibido";
+                write(pipefd[1], text, sizeof(text));
+                // printf("Soy pid2, c%d, he mandado mensaje y debe haber sido leído\n", i);
             }
         } else {
-            // Código del proceso padre
+            // El proceso se retiene hasta que todos sus procesos hijos terminen
             wait(NULL);
         }
     }
