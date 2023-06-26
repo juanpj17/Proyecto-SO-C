@@ -43,9 +43,3 @@ int main(int argc, char *argv[]) {
     }
     return 0;
 }
-    else {
-        // indica que no se proporcionaron suficientes argumentos al programa
-        printf("ERROR en los parametros\n"); 
-    }
-    return 0;
-}
